@@ -8,11 +8,21 @@ SaveEditor se;
 
 void edit_lives() {
     SwkbdState swkbd;
-    char lives[3];
-    swkbdInit(&swkbd, SWKBD_TYPE_NUMPAD, 1, 2);
+    char lives[4];
+    swkbdInit(&swkbd, SWKBD_TYPE_NUMPAD, 1, 3);
     swkbdInputText(&swkbd, lives, sizeof(lives));
+    int converted = std::atoi(lives);
+    if (converted > 100) {
+        printf("Invalid lives value!");
+        while (aptMainLoop()) {
+            hidScanInput();
+            if (hidKeysDown() & KEY_A)
+                break;
+        }
+        return;
+    }
     se.Position = 0x4250;
-    se.WriteInt8((s8)std::atoi(lives));
+    se.WriteInt8((s8)converted);
     printf("Fixing checksum...");
     se.Position = 0;
     u8 *bytes = se.ReadBytes(FILESIZE_PROGRESS);
