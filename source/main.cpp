@@ -27,13 +27,13 @@ void backup_medals() {
     if (!medals.FileOpen()) {
         FS_Archive arch;
         FSUSER_OpenArchive(&arch, ARCHIVE_SDMC, fsMakePath(PATH_EMPTY, ""));
-        FSUSER_CreateFile(arch, fsMakePath(PATH_ASCII, std::string("/medals.bin").data()), 0, 100);
+        FSUSER_CreateFile(arch, fsMakePath(PATH_ASCII, std::string("/medals.bin").data()), 0, 99);
         FSUSER_CloseArchive(arch);
         medals = SaveEditor("/medals.bin", Endian::Little);
     }
     se.Position = 0x4700;
     medals.Position = 0;
-    medals.WriteBytes(se.ReadBytes(100), 100);
+    medals.WriteBytes(se.ReadBytes(99), 99);
     medals.Close();
 }
 
@@ -45,7 +45,7 @@ void restore_medals() {
     }
     se.Position = 0x4700;
     medals.Position = 0;
-    se.WriteBytes(medals.ReadBytes(100), 100);
+    se.WriteBytes(medals.ReadBytes(99), 99);
     medals.Close();
     printf("Fixing checksum...");
     se.Position = 0;
