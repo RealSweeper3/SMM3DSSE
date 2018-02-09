@@ -114,9 +114,10 @@ int main(int argc, char **argv) {
   }
   sfse_menu menu(
       "Super Mario Maker for Nintendo 3DS Save Editor\nSelect a option.");
-  menu.AddOption(sfse_menu_option{"All Medals", all_medals});
-  menu.AddOption(sfse_menu_option{"Backup Medals", backup_medals});
-  menu.AddOption(sfse_menu_option{"Restore Medals", restore_medals});
+  menu.AddOption(sfse_menu_option{"All medals", all_medals});
+  menu.AddOption(sfse_menu_option{"Backup medals", backup_medals});
+  menu.AddOption(sfse_menu_option{"Restore medals", restore_medals});
+  menu.AddOption(sfse_menu_option{"Edit lives", edit_lives});
   menu.AddOption(sfse_menu_option{"Unlock all items", all_items});
   menu.AddOption(sfse_menu_option{"Exit", emptyfunc});
   while (aptMainLoop()) {
