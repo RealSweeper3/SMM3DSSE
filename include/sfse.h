@@ -151,16 +151,18 @@ public:
     std::string s(reinterpret_cast<char *>(bytes));
     if (e == Encoding::UTF16)
       s.erase(std::remove(s.begin(), s.end(), '\0'), s.end());
-    return s;
+    return s.substr(0, length);
   }
 
-  std::string ReadHexString(int byteCount) {
-    u8 *bytes = ReadBytes(byteCount);
-    std::ostringstream oss;
-    oss << std::hex << std::uppercase << std::setfill('0');
-    for (int i = 0; i < byteCount; i++)
-      oss << std::setw(2) << bytes[i];
-    return oss.str();
+  std::string ReadHexString(int length) {
+    std::string s = ReadString(length, Encoding::UTF8);
+    std::ostringstream ret;
+
+    for (std::string::size_type i = 0; i < s.length(); ++i)
+      ret << std::hex << std::setfill('0') << std::setw(2) << std::uppercase
+          << (int)s[i];
+
+    return ret.str();
   }
 
   void WriteInt8(s8 value) {
@@ -355,28 +357,41 @@ public:
     int selected = 0;
     consoleClear();
     printf("%s\n", message.c_str());
-    printf("%s\n", options[selected].name.c_str());
+    for (int i = 0; i <= option_count - 1; i++) {
+      if (selected == i)
+        printf("-> %s\n", options[i].name.c_str());
+      else
+        printf("   %s\n", options[i].name.c_str());
+    }
     while (aptMainLoop()) {
       gspWaitForVBlank();
       hidScanInput();
       if (hidKeysDown() & KEY_A)
         break;
       if (hidKeysDown() & KEY_DUP) {
-        if (selected < option_count - 1) {
-          selected++;
-          consoleClear();
-          printf("%s\n", message.c_str());
-          printf("%s\n", options[selected].name.c_str());
-          gfxFlushBuffers();
-          gfxSwapBuffers();
-        }
-      }
-      if (hidKeysDown() & KEY_DDOWN) {
         if (selected > 0) {
           selected--;
           consoleClear();
           printf("%s\n", message.c_str());
-          printf("%s\n", options[selected].name.c_str());
+          for (int i = 0; i <= option_count - 1; i++) {
+            if (selected == i)
+              printf("-> %s\n", options[i].name.c_str());
+            else
+              printf("   %s\n", options[i].name.c_str());
+          }
+        }
+      }
+      if (hidKeysDown() & KEY_DDOWN) {
+        if (selected < option_count - 1) {
+          selected++;
+          consoleClear();
+          printf("%s\n", message.c_str());
+          for (int i = 0; i <= option_count - 1; i++) {
+            if (selected == i)
+              printf("-> %s\n", options[i].name.c_str());
+            else
+              printf("   %s\n", options[i].name.c_str());
+          }
         }
       }
       gfxFlushBuffers();
