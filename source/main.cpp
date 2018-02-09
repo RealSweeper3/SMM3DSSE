@@ -8,6 +8,18 @@ SaveEditor se;
 
 void emptyfunc() {}
 
+void all_items() {
+    se.Position = 0x4252;
+    se.WriteInt8(19);
+    printf("Fixing checksum...");
+    se.Position = 0;
+    u8 *bytes = se.ReadBytes(FILESIZE_PROGRESS);
+    Progress p(bytes);
+    p.FixChecksum();
+    se.Position = 0;
+    se.WriteBytes(p.bufptr, FILESIZE_PROGRESS);
+}
+
 void all_medals() {
     for (int i = 0; i <= 99; i++) {
         se.Position = 0x4700 + i;
@@ -103,7 +115,7 @@ int main(int argc, char **argv) {
   menu.AddOption(sfse_menu_option{"All Medals", all_medals});
   menu.AddOption(sfse_menu_option{"Backup Medals", backup_medals});
   menu.AddOption(sfse_menu_option{"Restore Medals", restore_medals});
-  menu.AddOption(sfse_menu_option{"Edit Lives", edit_lives});
+  menu.AddOption(sfse_menu_option{"Unlock all items", all_items});
   menu.AddOption(sfse_menu_option{"Exit", emptyfunc});
   while (aptMainLoop()) {
     int option = menu.GetOption();
