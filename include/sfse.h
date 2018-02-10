@@ -356,7 +356,8 @@ public:
   int GetOption() {
     int selected = 0;
     consoleClear();
-    printf("%s\n", message.c_str());
+    if (message != "")
+      printf("%s\n", message.c_str());
     for (int i = 0; i <= option_count - 1; i++) {
       if (selected == i)
         printf("-> %s\n", options[i].name.c_str());
@@ -372,7 +373,8 @@ public:
         if (selected > 0) {
           selected--;
           consoleClear();
-          printf("%s\n", message.c_str());
+          if (message != "")
+            printf("%s\n", message.c_str());
           for (int i = 0; i <= option_count - 1; i++) {
             if (selected == i)
               printf("-> %s\n", options[i].name.c_str());
@@ -385,7 +387,8 @@ public:
         if (selected < option_count - 1) {
           selected++;
           consoleClear();
-          printf("%s\n", message.c_str());
+          if (message != "")
+            printf("%s\n", message.c_str());
           for (int i = 0; i <= option_count - 1; i++) {
             if (selected == i)
               printf("-> %s\n", options[i].name.c_str());
