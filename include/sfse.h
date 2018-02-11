@@ -60,8 +60,7 @@ public:
 
   u8 *ReadBytes(int count) {
     u8 *bytes = new u8[count];
-    for (int i = 0; i < count; i++)
-      bytes[i] = ReadUInt8();
+    FSFILE_Read(fileHandle, NULL, Position, bytes, count);
     if (_endian == Endian::Big) {
       u8 c;
       u8 *s0 = bytes - 1;
@@ -74,6 +73,7 @@ public:
         *s1 = c;
       }
     }
+    Position += count;
     return bytes;
   }
 
@@ -195,10 +195,8 @@ public:
         *s1 = c;
       }
     }
-    for (int i = 0; i < byteCount; i++) {
-      FSFILE_Write(fileHandle, NULL, Position, &bytes[i], 1, FS_WRITE_FLUSH);
-      Position++;
-    }
+    FSFILE_Write(fileHandle, NULL, Position, bytes, byteCount, FS_WRITE_FLUSH);
+    Position += byteCount;
   }
 
   void WriteInt16(s16 value) {
