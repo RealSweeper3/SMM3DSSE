@@ -11,7 +11,6 @@ void emptyfunc() {}
 void all_items() {
   se.Position = 0x4252;
   se.WriteInt8(19);
-  printf("Fixing checksum...");
   se.Position = 0;
   u8 *bytes = se.ReadBytes(FILESIZE_PROGRESS);
   Progress p(bytes);
@@ -25,7 +24,6 @@ void all_medals() {
     se.Position = 0x4700 + i;
     se.WriteInt8(7);
   }
-  printf("Fixing checksum...");
   se.Position = 0;
   u8 *bytes = se.ReadBytes(FILESIZE_PROGRESS);
   Progress p(bytes);
@@ -60,7 +58,6 @@ void restore_medals() {
   medals.Position = 0;
   se.WriteBytes(medals.ReadBytes(99), 99);
   medals.Close();
-  printf("Fixing checksum...");
   se.Position = 0;
   u8 *bytes = se.ReadBytes(FILESIZE_PROGRESS);
   Progress p(bytes);
@@ -86,7 +83,6 @@ void edit_lives() {
   }
   se.Position = 0x4250;
   se.WriteInt8((s8)converted);
-  printf("Fixing checksum...");
   se.Position = 0;
   u8 *bytes = se.ReadBytes(FILESIZE_PROGRESS);
   Progress p(bytes);
