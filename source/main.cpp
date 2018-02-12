@@ -52,6 +52,11 @@ void restore_medals() {
   SaveEditor medals("/medals.bin", Endian::Little);
   if (!medals.FileOpen()) {
     printf("medals.bin not found!");
+    while (aptMainLoop()) {
+      hidScanInput();
+      if (hidKeysDown() & KEY_A)
+        break;
+    }
     return;
   }
   se.Position = 0x4700;
