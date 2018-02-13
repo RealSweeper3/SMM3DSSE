@@ -18,9 +18,31 @@ enum class Encoding { UTF8, UTF16 };
 class SaveEditor {
 public:
   u64 Position;
-  SaveEditor() {}
+  SaveEditor() { savedata = false; }
   SaveEditor(std::string path, Endian e) {
+    savedata = false;
     FSUSER_OpenArchive(&arch, ARCHIVE_SDMC, fsMakePath(PATH_EMPTY, ""));
+    Result res =
+        FSUSER_OpenFile(&fileHandle, arch, fsMakePath(PATH_ASCII, path.data()),
+                        FS_OPEN_READ | FS_OPEN_WRITE, 0);
+    if (R_SUCCEEDED(res)) {
+      open = true;
+      FSFILE_GetSize(fileHandle, &fileSize);
+      _endian = e;
+    } else {
+      open = false;
+    }
+  }
+
+  SaveEditor(u64 tid, std::string path, Endian e) {
+    savedata = true;
+    u32 cardPath[3] = {MEDIATYPE_GAME_CARD, tid, tid >> 32};
+    if (R_FAILED(FSUSER_OpenArchive(&arch, ARCHIVE_USER_SAVEDATA,
+                                    {PATH_BINARY, 0xC, cardPath}))) {
+      u32 sdPath[3] = {MEDIATYPE_SD, tid, tid >> 32};
+      FSUSER_OpenArchive(&arch, ARCHIVE_USER_SAVEDATA,
+                         {PATH_BINARY, 0xC, sdPath});
+    }
     Result res =
         FSUSER_OpenFile(&fileHandle, arch, fsMakePath(PATH_ASCII, path.data()),
                         FS_OPEN_READ | FS_OPEN_WRITE, 0);
@@ -36,6 +58,9 @@ public:
   void Close() {
     if (open) {
       FSFILE_Close(fileHandle);
+      if (savedata)
+        FSUSER_ControlArchive(arch, ARCHIVE_ACTION_COMMIT_SAVE_DATA, NULL, 0,
+                              NULL, 0);
       FSUSER_CloseArchive(arch);
       open = false;
     }
@@ -324,6 +349,7 @@ public:
 
 private:
   bool open;
+  bool savedata;
   Endian _endian;
   FS_Archive arch;
   Handle fileHandle;
