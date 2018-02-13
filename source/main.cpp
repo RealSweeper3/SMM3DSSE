@@ -1,4 +1,5 @@
 #include <cstdlib>
+#include <cinttypes>
 #include <sfse.h>
 #include "shit.h"
 
@@ -6,7 +7,7 @@ using MM::SHIT::Progress;
 
 SaveEditor se;
 
-void emptyfunc() {}
+u64 ids[] = {0x00040000001A0500, 0x00040000001A0400, 0x00040000001A0300};
 
 void all_items() {
   se.Position = 0x4252;
@@ -99,9 +100,15 @@ void edit_lives() {
 int main(int argc, char **argv) {
   gfxInitDefault();
   consoleInit(GFX_TOP, NULL);
-  se = SaveEditor("/Progress", Endian::Little);
+  sfse_menu mreg(
+      "Super Mario Maker for Nintendo 3DS Save Editor\nSelect a option.");
+  mreg.AddOption(sfse_menu_option{"EUR", nullptr});
+  mreg.AddOption(sfse_menu_option{"USA", nullptr});
+  mreg.AddOption(sfse_menu_option{"JPN", nullptr});
+  int reg = mreg.GetOption();
+  se = SaveEditor(ids[reg], "/Progress", Endian::Little);
   if (!se.FileOpen()) {
-    printf("Progress not found in SD card!\n");
+    printf("Save not found!\n");
     printf("Press START to exit.\n");
     while (aptMainLoop()) {
       gspWaitForVBlank();
@@ -120,7 +127,7 @@ int main(int argc, char **argv) {
   menu.AddOption(sfse_menu_option{"Restore medals", restore_medals});
   menu.AddOption(sfse_menu_option{"Edit lives", edit_lives});
   menu.AddOption(sfse_menu_option{"Unlock all items", all_items});
-  menu.AddOption(sfse_menu_option{"Exit", emptyfunc});
+  menu.AddOption(sfse_menu_option{"Exit", nullptr});
   while (aptMainLoop()) {
     int option = menu.GetOption();
     if (option == menu.OptionCount() - 1)
