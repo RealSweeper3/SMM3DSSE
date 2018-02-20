@@ -6,7 +6,7 @@ using MM::SHIT::Progress;
 
 SaveEditor se;
 
-u64 ids[] = {0x00040000001A0500, 0x00040000001A0400, 0x00040000001A0300};
+u64 ids[] = {0x00040000001A0500, 0x00040000001A0400, 0x00040000001A0300, 0x00040000001BB800};
 
 void all_items() {
   se.Position = 0x4252;
@@ -104,6 +104,7 @@ int main(int argc, char **argv) {
   mreg.AddOption(sfse_menu_option{"EUR", nullptr});
   mreg.AddOption(sfse_menu_option{"USA", nullptr});
   mreg.AddOption(sfse_menu_option{"JPN", nullptr});
+  mreg.AddOption(sfse_menu_option{"KOR", nullptr});
   int reg = mreg.GetOption();
   se = SaveEditor(ids[reg], "/Progress", Endian::Little);
   if (!se.FileOpen()) {
