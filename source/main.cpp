@@ -7,13 +7,15 @@ extern "C" {
 
 SaveEditor se;
 
-u64 ids[] = {0x00040000001A0500, 0x00040000001A0400, 0x00040000001A0300, 0x00040000001BB800};
+u64 ids[] = {0x00040000001A0500, 0x00040000001A0400, 0x00040000001A0300,
+             0x00040000001BB800};
 
 void FixChecksum() {
   se.Position = 0;
   u8 *bytes = se.ReadBytes(FILESIZE_PROGRESS);
-  u32* checksum = (u32*)bytes;
-  *checksum = addcrc((u16*)(bytes + 0x18), FILESIZE_PROGRESS - 0x18, ADDIFF_PROGRESS);
+  u32 *checksum = (u32 *)bytes;
+  *checksum =
+      addcrc((u16 *)(bytes + 0x18), FILESIZE_PROGRESS - 0x18, ADDIFF_PROGRESS);
   se.Position = 0;
   se.WriteBytes(bytes, FILESIZE_PROGRESS);
 }
