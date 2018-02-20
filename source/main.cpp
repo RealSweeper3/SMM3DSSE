@@ -1,22 +1,27 @@
 #include <cstdlib>
 #include <sfse.h>
-#include "shit.h"
 
-using MM::SHIT::Progress;
+extern "C" {
+#include "crc.h"
+}
 
 SaveEditor se;
 
 u64 ids[] = {0x00040000001A0500, 0x00040000001A0400, 0x00040000001A0300, 0x00040000001BB800};
 
+void FixChecksum() {
+  se.Position = 0;
+  u8 *bytes = se.ReadBytes(FILESIZE_PROGRESS);
+  u32* checksum = (u32*)bytes;
+  *checksum = addcrc((u16*)(bytes + 0x18), FILESIZE_PROGRESS - 0x18, ADDIFF_PROGRESS);
+  se.Position = 0;
+  se.WriteBytes(bytes, FILESIZE_PROGRESS);
+}
+
 void all_items() {
   se.Position = 0x4252;
   se.WriteInt8(19);
-  se.Position = 0;
-  u8 *bytes = se.ReadBytes(FILESIZE_PROGRESS);
-  Progress p(bytes);
-  p.FixChecksum();
-  se.Position = 0;
-  se.WriteBytes(p.bufptr, FILESIZE_PROGRESS);
+  FixChecksum();
 }
 
 void all_medals() {
@@ -24,12 +29,7 @@ void all_medals() {
     se.Position = 0x4700 + i;
     se.WriteInt8(7);
   }
-  se.Position = 0;
-  u8 *bytes = se.ReadBytes(FILESIZE_PROGRESS);
-  Progress p(bytes);
-  p.FixChecksum();
-  se.Position = 0;
-  se.WriteBytes(p.bufptr, FILESIZE_PROGRESS);
+  FixChecksum();
 }
 
 void backup_medals() {
@@ -63,12 +63,7 @@ void restore_medals() {
   medals.Position = 0;
   se.WriteBytes(medals.ReadBytes(99), 99);
   medals.Close();
-  se.Position = 0;
-  u8 *bytes = se.ReadBytes(FILESIZE_PROGRESS);
-  Progress p(bytes);
-  p.FixChecksum();
-  se.Position = 0;
-  se.WriteBytes(p.bufptr, FILESIZE_PROGRESS);
+  FixChecksum();
 }
 
 void edit_lives() {
@@ -88,12 +83,7 @@ void edit_lives() {
   }
   se.Position = 0x4250;
   se.WriteInt8((s8)converted);
-  se.Position = 0;
-  u8 *bytes = se.ReadBytes(FILESIZE_PROGRESS);
-  Progress p(bytes);
-  p.FixChecksum();
-  se.Position = 0;
-  se.WriteBytes(p.bufptr, FILESIZE_PROGRESS);
+  FixChecksum();
 }
 
 int main(int argc, char **argv) {
