@@ -73,7 +73,7 @@ void edit_lives() {
   char lives[4];
   swkbdInit(&swkbd, SWKBD_TYPE_NUMPAD, 1, 3);
   swkbdInputText(&swkbd, lives, sizeof(lives));
-  s8 converted = (s8)std::atoll(lives);
+  s8 converted = (s8)std::atoi(lives);
   if (converted == 0 || converted > 100) {
     printf("Invalid lives value!");
     while (aptMainLoop()) {
