@@ -9,7 +9,6 @@
 #include <sstream>
 #include <string>
 #include <vector>
-
 #include <3ds.h>
 
 enum class Endian { Big, Little };
