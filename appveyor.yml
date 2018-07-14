@@ -1,0 +1,32 @@
+pull_requests:
+  do_not_increment_build_number: true
+skip_tags: true
+
+os: Visual Studio 2017
+
+environment:
+  MSYSTEM: MINGW64
+  CHERE_INVOKING: 1
+
+platform:
+  - x64
+
+configuration:
+  - Release
+
+install:
+  - C:\msys64\usr\bin\bash -lc "sh install.sh"
+  - C:\msys64\usr\bin\bash -lc "sh install2.sh"
+
+build_script:
+  - C:\msys64\usr\bin\bash.exe -lc "sh build.sh"
+
+artifacts:
+  - path: "C:\projects\SMM3DSSSE\SMM3DSSE.3dsx"
+    name: build
+
+deploy:
+ - provider: Environment
+   name: ghreleasesnd
+   on:
+     branch: master
