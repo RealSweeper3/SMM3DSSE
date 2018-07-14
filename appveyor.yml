@@ -22,7 +22,7 @@ build_script:
   - C:\msys64\usr\bin\bash.exe -lc "sh build.sh"
 
 artifacts:
-  - path: "C:\projects\SMM3DSSSE\SMM3DSSE.3dsx"
+  - path: "SMM3DSSE.3dsx"
     name: build
 
 deploy:
