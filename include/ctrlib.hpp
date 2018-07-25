@@ -339,7 +339,7 @@ public:
                     printf("   %s\n", options[i].c_str());
             }*/
             C3D_FrameBegin(C3D_FRAME_SYNCDRAW);
-            C2D_TargetClear(top, C2D_Color32f(0.0f, 0.0f, 0.0f, 1.0f));
+            C2D_TargetClear(top, C2D_Color32(0x68, 0xB0, 0xD8, 0xFF));
             C2D_SceneBegin(top);
             auto DrawText = [&](const std::string& str, float x, float y, float scaleX, float scaleY) {
                 C2D_Text text;
