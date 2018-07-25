@@ -394,10 +394,16 @@ private:
 } // namespace ui
 
 namespace title {
-Result Install(const std::string& path, FS_MediaType media_type) {
-    // Initialize AM service
-    amInit();
 
+Result Init() {
+    return amInit();
+}
+
+void Exit() {
+    amExit();
+}
+
+Result Install(const std::string& path, FS_MediaType media_type) {
     u8* buffer = NULL;
     FILE* file = fopen(path.c_str(), "rb");
 
@@ -443,8 +449,6 @@ Result Install(const std::string& path, FS_MediaType media_type) {
         return res;
     }
 
-    // Exit AM service
-    amExit();
     return 0;
 }
 } // namespace title
