@@ -32,13 +32,8 @@ void AllMedals() {
 
 void BackupMedals() {
     ctr::fs::File medals("/medals.bin", ctr::fs::Endian::Little);
-    if (!medals.IsOpen()) {
-        FS_Archive arch;
-        FSUSER_OpenArchive(&arch, ARCHIVE_SDMC, fsMakePath(PATH_EMPTY, ""));
-        FSUSER_CreateFile(arch, fsMakePath(PATH_ASCII, std::string("/medals.bin").data()), 0, 99);
-        FSUSER_CloseArchive(arch);
-        medals = ctr::fs::File("/medals.bin", ctr::fs::Endian::Little);
-    }
+    if (!medals.IsOpen())
+        medals.Create();
     file.SetOffset(0x4700);
     medals.SetOffset(0);
     medals.WriteBytes(file.ReadBytes(99), 99);
@@ -48,15 +43,7 @@ void BackupMedals() {
 void RestoreMedals() {
     ctr::fs::File medals("/medals.bin", ctr::fs::Endian::Little);
     if (!medals.IsOpen()) {
-        printf("medals.bin not found!");
-        while (aptMainLoop()) {
-            hidScanInput();
-            if (hidKeysDown() & KEY_A)
-                break;
-            gfxFlushBuffers();
-            gfxSwapBuffers();
-            gspWaitForVBlank();
-        }
+        ctr::ui::ShowWait("medals.bin not found!", KEY_A);
         return;
     }
     file.SetOffset(0x4700);
@@ -74,15 +61,7 @@ void EditLives() {
     int i = std::atoi(lives);
     s8 converted = static_cast<s8>((i > 127) ? 0 : i);
     if ((converted == 0) || (converted > 100)) {
-        printf("Invalid lives value!");
-        while (true) {
-            hidScanInput();
-            if (hidKeysDown() & KEY_A)
-                break;
-            gfxFlushBuffers();
-            gfxSwapBuffers();
-            gspWaitForVBlank();
-        }
+        ctr::ui::ShowWait("Invalid lives value!", KEY_A);
         return;
     }
     file.SetOffset(0x4250);
@@ -102,14 +81,7 @@ int main(int argc, char** argv) {
                        0x00040000001BB800};
     file = ctr::fs::File(title_ids[region], "/Progress", ctr::fs::Endian::Little);
     if (!file.IsOpen()) {
-        printf("Save not found!\n");
-        printf("Press START to exit.\n");
-        while (!(hidKeysDown() & KEY_START)) {
-            hidScanInput();
-            gfxFlushBuffers();
-            gfxSwapBuffers();
-            gspWaitForVBlank();
-        }
+        ctr::ui::Show("Save not found!\nPress START to exit.", KEY_START);
         return -1;
     }
     ctr::ui::Menu menu("Select a option.");
