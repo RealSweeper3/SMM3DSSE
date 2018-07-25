@@ -35,10 +35,9 @@ class File {
 public:
     explicit File() : mode(Mode::SD) {}
 
-    explicit File(const std::string& path, Endian endian) : mode(Mode::SD), endian(endian) {
+    explicit File(const std::string& path, Endian endian) : mode(Mode::SD), endian(endian), path(fsMakePath(PATH_ASCII, path.data())) {
         FSUSER_OpenArchive(&arch, ARCHIVE_SDMC, fsMakePath(PATH_EMPTY, ""));
-        Result res = FSUSER_OpenFile(&file_handle, arch, fsMakePath(PATH_ASCII, path.data()),
-                                     FS_OPEN_READ | FS_OPEN_WRITE, 0);
+        Result res = FSUSER_OpenFile(&file_handle, arch, this->path, FS_OPEN_READ | FS_OPEN_WRITE, 0);
         if (R_SUCCEEDED(res)) {
             open = true;
             FSFILE_GetSize(file_handle, &file_size);
@@ -48,15 +47,14 @@ public:
     }
 
     explicit File(u64 title_id, const std::string& path, Endian endian)
-        : mode(Mode::SaveData), endian(endian) {
+        : mode(Mode::SaveData), endian(endian), path(fsMakePath(PATH_ASCII, path.data())) {
         u32 cardPath[3] = {MEDIATYPE_GAME_CARD, title_id, title_id >> 32};
         if (R_FAILED(
                 FSUSER_OpenArchive(&arch, ARCHIVE_USER_SAVEDATA, {PATH_BINARY, 0xC, cardPath}))) {
             u32 sdPath[3] = {MEDIATYPE_SD, title_id, title_id >> 32};
             FSUSER_OpenArchive(&arch, ARCHIVE_USER_SAVEDATA, {PATH_BINARY, 0xC, sdPath});
         }
-        Result res = FSUSER_OpenFile(&file_handle, arch, fsMakePath(PATH_ASCII, path.data()),
-                                     FS_OPEN_READ | FS_OPEN_WRITE, 0);
+        Result res = FSUSER_OpenFile(&file_handle, arch, this->path, FS_OPEN_READ | FS_OPEN_WRITE, 0);
         if (R_SUCCEEDED(res)) {
             open = true;
             FSFILE_GetSize(file_handle, &file_size);
@@ -68,6 +66,17 @@ public:
     explicit File(Handle handle, Endian endian)
         : open(true), mode(Mode::FileHandle), endian(endian), file_handle(handle) {
         FSFILE_GetSize(file_handle, &file_size);
+    }
+
+    void Create(u64 size) {
+        FSUSER_CreateFile(arch, path, 0, size);
+        Result res = FSUSER_OpenFile(&file_handle, arch, path, FS_OPEN_READ | FS_OPEN_WRITE, 0);
+        if (R_SUCCEEDED(res)) {
+            open = true;
+            FSFILE_GetSize(file_handle, &file_size);
+        } else {
+            open = false;
+        }
     }
 
     void Close() {
@@ -286,6 +295,7 @@ private:
     bool open;
     Mode mode;
     Endian endian;
+    FS_Path path;
     FS_Archive arch;
     Handle file_handle;
     u64 file_size = 0, offset = 0;
@@ -313,6 +323,22 @@ void Exit() {
 	gfxExit();
 }
 
+void ShowWait(const std::string& message, u32 keys) {
+    while (true) {
+        hid::Poll();
+        if (hid::Pressed(keys))
+            break;
+        C2D_SceneBegin(top);
+        C3D_FrameBegin(C3D_FRAME_SYNCDRAW);
+        C2D_TargetClear(top, C2D_Color32(0x68, 0xB0, 0xD8, 0xFF));
+        C2D_Text text;
+        C2D_TextParse(&text, text_buf, message.c_str());
+        C2D_TextOptimize(&text);
+        C2D_DrawText(&text, C2D_WithColor, 0, 0, 0.5f, 1, 1);
+        C3D_FrameEnd(0);
+    }
+}
+
 class Menu {
 public:
     explicit Menu(std::string message) : message(message) {}
@@ -338,9 +364,9 @@ public:
                 else
                     printf("   %s\n", options[i].c_str());
             }*/
+            C2D_SceneBegin(top);
             C3D_FrameBegin(C3D_FRAME_SYNCDRAW);
             C2D_TargetClear(top, C2D_Color32(0x68, 0xB0, 0xD8, 0xFF));
-            C2D_SceneBegin(top);
             auto DrawText = [&](const std::string& str, float x, float y, float scaleX, float scaleY) {
                 C2D_Text text;
                 C2D_TextParse(&text, text_buf, str.c_str());
@@ -361,26 +387,19 @@ public:
             }
             C3D_FrameEnd(0);
         };
-        DrawMenu();
         while (true) {
             hidScanInput();
             if (hidKeysDown() & KEY_A)
                 break;
             if (hidKeysDown() & KEY_UP) {
-                if (selected > 0) {
+                if (selected > 0)
                     --selected;
-                    DrawMenu();
-                }
             }
             if (hidKeysDown() & KEY_DOWN) {
-                if (selected < (options.size() - 1)) {
+                if (selected < (options.size() - 1))
                     ++selected;
-                    DrawMenu();
-                }
             }
-            gfxFlushBuffers();
-            gfxSwapBuffers();
-            gspWaitForVBlank();
+            DrawMenu();
         }
         return selected;
     }
@@ -817,63 +836,63 @@ Response Head(const std::string& url, bool keep_alive = false, Headers headers =
 
 namespace hid {
 
-inline void poll() {
+inline void Poll() {
     hidScanInput();
 }
 
-inline bool released(u32 buttons) {
+inline bool Released(u32 buttons) {
     return (hidKeysUp() & buttons) != 0;
 }
 
-inline bool pressed(u32 buttons) {
+inline bool Pressed(u32 buttons) {
     return (hidKeysDown() & buttons) != 0;
 }
 
-inline bool held(u32 buttons) {
+inline bool Held(u32 buttons) {
     return (hidKeysHeld() & buttons) != 0;
 }
 
-inline touchPosition touch() {
+inline touchPosition Touch() {
     touchPosition pos;
     hidTouchRead(&pos);
     return pos;
 }
 
-inline circlePosition circlePad() {
+inline circlePosition CirclePad() {
     circlePosition pos;
     hidCircleRead(&pos);
     return pos;
 }
 
-inline circlePosition cStick() {
+inline circlePosition CStick() {
     circlePosition pos;
     irrstCstickRead(&pos);
     return pos;
 }
 
-Result enableAccelerometer() {
+Result EnableAccelerometer() {
     return HIDUSER_EnableAccelerometer();
 }
 
-Result disableAccelerometer() {
+Result DisableAccelerometer() {
     return HIDUSER_DisableAccelerometer();
 }
 
-inline accelVector accelerometer() {
+inline accelVector Accelerometer() {
     accelVector vec;
     hidAccelRead(&vec);
     return vec;
 }
 
-Result enableGyroscope() {
+Result EnableGyroscope() {
     return HIDUSER_EnableGyroscope();
 }
 
-Result disableGyroscope() {
+Result DisableGyroscope() {
     return HIDUSER_DisableGyroscope();
 }
 
-inline angularRate gyroscope() {
+inline angularRate Gyroscope() {
     angularRate rate;
     hidGyroRead(&rate);
     return rate;
@@ -882,15 +901,15 @@ inline angularRate gyroscope() {
 
 namespace news {
 
-Result init() {
+Result Enit() {
     return newsInit();
 }
 
-void exit() {
+void Exit() {
     newsExit();
 }
 
-Result add(std::u16string title, std::u16string message, void* image, u32 imageSize, bool jpeg) {
+Result AddNotification(std::u16string title, std::u16string message, void* image, u32 imageSize, bool jpeg) {
     return NEWS_AddNotification((const u16*)title.c_str(), title.length(), (const u16*)message.c_str(), message.length(), image, imageSize, jpeg);
 }
 } // namespace news
