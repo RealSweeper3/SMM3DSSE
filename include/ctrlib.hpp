@@ -23,6 +23,7 @@
 #include <netinet/in.h>
 #include <arpa/inet.h>
 #include <3ds.h>
+#include <citro3d.h>
 
 namespace ctr {
 namespace fs {
@@ -69,7 +70,7 @@ public:
         FSFILE_GetSize(file_handle, &file_size);
     }
 
-    void CloseFile() {
+    void Close() {
         if (open) {
             FSFILE_Close(file_handle);
             if (mode == Mode::SaveData)
@@ -80,7 +81,7 @@ public:
         }
     }
 
-    bool FileOpen() {
+    bool IsOpen() {
         return open;
     }
 
@@ -367,6 +368,15 @@ unsigned char vshader_shbin[820] = {
 
 int vshader_shbin_size = 820;
 
+#define CLEAR_COLOR 0x68B0D8FF
+
+#define DISPLAY_TRANSFER_FLAGS \
+	(GX_TRANSFER_FLIP_VERT(0) | GX_TRANSFER_OUT_TILED(0) | GX_TRANSFER_RAW_COPY(0) | \
+	GX_TRANSFER_IN_FORMAT(GX_TRANSFER_FMT_RGBA8) | GX_TRANSFER_OUT_FORMAT(GX_TRANSFER_FMT_RGB8) | \
+	GX_TRANSFER_SCALING(GX_TRANSFER_SCALE_NO))
+
+typedef struct { float position[3]; float texcoord[2]; } textVertex_s;
+
 static DVLB_s* vshader_dvlb;
 static shaderProgram_s program;
 static int uLoc_projection;
@@ -540,16 +550,17 @@ public:
             }*/
             startframe();
             drawon(GFX_TOP);
-            int start = 0;
+            float y = 0;
             if (!message.empty()) {
                 renderText(0, 0, 1, 1, false, message.c_str());
-                start = 25;
+                y = 25;
             }
             for (size_t i = 0; i < options.size(); ++i) {
                 if (selected == i)
-                    renderText(0, start * (i + 1), false, std::string("-> " + options[i]).c_str());
+                    renderText(0, y, false, std::string("-> " + options[i]).c_str());
                 else
-                    renderText(0, start * (i + 1), false, std::string("   " + options[i]).c_str());
+                    renderText(0, y, false, std::string("   " + options[i]).c_str());
+                y += 25;
             }
             endframe();
         };
