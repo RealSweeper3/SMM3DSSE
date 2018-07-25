@@ -431,7 +431,8 @@ void sceneInit(void) {
     for (i = 0; i < glyphInfo->nSheets; i ++) {
         C3D_Tex* tex = &glyphSheets[i];
         tex->data = fontGetGlyphSheetTex(i);
-        tex->fmt = (GPU_TEXCOLOR)glyphInfo->sheetFmt        tex->size = glyphInfo->sheetSize;
+        tex->fmt = (GPU_TEXCOLOR)glyphInfo->sheetFmt;
+        tex->size = glyphInfo->sheetSize;
         tex->width = glyphInfo->sheetWidth;
         tex->height = glyphInfo->sheetHeight;
         tex->param = GPU_TEXTURE_MAG_FILTER(GPU_LINEAR) | GPU_TEXTURE_MIN_FILTER(GPU_LINEAR)
@@ -450,8 +451,8 @@ void drawon(gfxScreen_t screen) {
 
 void setTextColor(u32 color) {
     C3D_TexEnv* env = C3D_GetTexEnv(0);
-    C3D_TexEnvSrc(env, C3D_RGB, GPU_CONSTANT, 0, 0);
-    C3D_TexEnvSrc(env, C3D_Alpha, GPU_TEXTURE0, GPU_CONSTANT, 0);
+    C3D_TexEnvSrc(env, C3D_RGB, GPU_CONSTANT, GPU_FRAGMENT_PRIMARY_COLOR, GPU_FRAGMENT_SECONDARY_COLOR);
+    C3D_TexEnvSrc(env, C3D_Alpha, GPU_TEXTURE0, GPU_CONSTANT, GPU_PRIMARY_COLOR);
     C3D_TexEnvOp(env, C3D_Both, 0, 0, 0);
     C3D_TexEnvFunc(env, C3D_RGB, GPU_REPLACE);
     C3D_TexEnvFunc(env, C3D_Alpha, GPU_MODULATE);
@@ -557,9 +558,9 @@ public:
             }
             for (size_t i = 0; i < options.size(); ++i) {
                 if (selected == i)
-                    renderText(0, y, false, std::string("-> " + options[i]).c_str());
+                    renderText(0, y, 0.7, 0.7, false, std::string("-> " + options[i]).c_str());
                 else
-                    renderText(0, y, false, std::string("   " + options[i]).c_str());
+                    renderText(0, y, 0.7, 0.7, false, std::string("   " + options[i]).c_str());
                 y += 25;
             }
             endframe();
@@ -1033,7 +1034,7 @@ inline bool held(u32 buttons) {
     return (hidKeysHeld() & buttons) != 0;
 }
 
-inline touchPosition ctr::hid::touch() {
+inline touchPosition touch() {
     touchPosition pos;
     hidTouchRead(&pos);
     return pos;
@@ -1045,7 +1046,7 @@ inline circlePosition circlePad() {
     return pos;
 }
 
-inline circlePosition ctr::hid::cStick() {
+inline circlePosition cStick() {
     circlePosition pos;
     irrstCstickRead(&pos);
     return pos;
@@ -1090,7 +1091,7 @@ void exit() {
     newsExit();
 }
 
-Result add() {
+Result add(std::u16string title, std::u16string message, void* image, u32 imageSize, bool jpeg) {
     return NEWS_AddNotification((const u16*)title.c_str(), title.length(), (const u16*)message.c_str(), message.length(), image, imageSize, jpeg);
 }
 } // namespace news
