@@ -1,53 +1,53 @@
 #include <cstdlib>
-#include <sfse.h>
+#include "ctrlib.hpp"
 
 extern "C" {
 #include "crc.h"
 }
 
-SFSE::SaveEditor se;
+ctr::fs::File file;
 
 void FixChecksum() {
-    se.SetOffset(0);
+    file.SetOffset(0);
     u8* bytes = se.ReadBytes(FILESIZE_PROGRESS);
     u32* checksum = (u32*)bytes;
     *checksum = addcrc((u16*)(bytes + 0x18), FILESIZE_PROGRESS - 0x18, ADDIFF_PROGRESS);
-    se.SetOffset(0);
-    se.WriteBytes(bytes, FILESIZE_PROGRESS);
+    file.SetOffset(0);
+    file.WriteBytes(bytes, FILESIZE_PROGRESS);
 }
 
 void AllItems() {
-    se.SetOffset(0x4252);
-    se.WriteInt8(19);
+    file.SetOffset(0x4252);
+    file.WriteInt8(19);
     FixChecksum();
 }
 
 void AllMedals() {
     for (int i = 0; i <= 99; ++i) {
-        se.SetOffset(0x4700 + i);
-        se.WriteInt8(7);
+        file.SetOffset(0x4700 + i);
+        file.WriteInt8(7);
     }
     FixChecksum();
 }
 
 void BackupMedals() {
-    SFSE::SaveEditor medals("/medals.bin", Endian::Little);
-    if (!medals.FileOpen()) {
+    ctr::fs::File medals("/medals.bin", Endian::Little);
+    if (!medals.IsOpen()) {
         FS_Archive arch;
         FSUSER_OpenArchive(&arch, ARCHIVE_SDMC, fsMakePath(PATH_EMPTY, ""));
         FSUSER_CreateFile(arch, fsMakePath(PATH_ASCII, std::string("/medals.bin").data()), 0, 99);
         FSUSER_CloseArchive(arch);
-        medals = SFSE::SaveEditor("/medals.bin", Endian::Little);
+        medals = ctr::fs::File("/medals.bin", Endian::Little);
     }
-    se.SetOffset(0x4700);
+    file.SetOffset(0x4700);
     medals.SetOffset(0);
-    medals.WriteBytes(se.ReadBytes(99), 99);
-    medals.CloseFile();
+    medals.WriteBytes(file.ReadBytes(99), 99);
+    medals.Close();
 }
 
 void RestoreMedals() {
-    SFSE::SaveEditor medals("/medals.bin", Endian::Little);
-    if (!medals.FileOpen()) {
+    ctr::fs::File medals("/medals.bin", Endian::Little);
+    if (!medals.IsOpen()) {
         printf("medals.bin not found!");
         while (aptMainLoop()) {
             hidScanInput();
@@ -59,10 +59,10 @@ void RestoreMedals() {
         }
         return;
     }
-    se.SetOffset(0x4700);
+    file.SetOffset(0x4700);
     medals.SetOffset(0);
-    se.WriteBytes(medals.ReadBytes(99), 99);
-    medals.CloseFile();
+    file.WriteBytes(medals.ReadBytes(99), 99);
+    medals.Close();
     FixChecksum();
 }
 
@@ -85,15 +85,15 @@ void EditLives() {
         }
         return;
     }
-    se.SetOffset(0x4250);
-    se.WriteInt8(converted);
+    file.SetOffset(0x4250);
+    file.WriteInt8(converted);
     FixChecksum();
 }
 
 int main(int argc, char** argv) {
     gfxInitDefault();
     consoleInit(GFX_TOP, NULL);
-    SFSE::Menu menu_region("Select a option.");
+    ctr::ui::Menu menu_region("Select a option.");
     menu_region.AddOption("EUR");
     menu_region.AddOption("USA");
     menu_region.AddOption("JPN");
@@ -101,8 +101,8 @@ int main(int argc, char** argv) {
     size_t region = menu_region.GetOption();
     u64 title_ids[] = {0x00040000001A0500, 0x00040000001A0400, 0x00040000001A0300,
                        0x00040000001BB800};
-    se = SFSE::SaveEditor(title_ids[region], "/Progress", Endian::Little);
-    if (!se.FileOpen()) {
+    file = ctr::fs::File(title_ids[region], "/Progress", Endian::Little);
+    if (!file.IsOpen()) {
         printf("Save not found!\n");
         printf("Press START to exit.\n");
         while (!(hidKeysDown() & KEY_START)) {
@@ -144,7 +144,7 @@ int main(int argc, char** argv) {
             break;
         }
     }
-    se.CloseFile();
+    file.Close();
     gfxExit();
     return 0;
 }
