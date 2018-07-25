@@ -328,8 +328,6 @@ public:
     size_t GetOption() {
         size_t selected = 0;
         //consoleClear();
-        sceneInit();
-        setTextColor(0xFF000000);
         auto DrawMenu = [&] {
             /*consoleClear();
             if (!message.empty())
@@ -343,7 +341,7 @@ public:
             C3D_FrameBegin(C3D_FRAME_SYNCDRAW);
             C2D_TargetClear(top, C2D_Color32f(0.0f, 0.0f, 0.0f, 1.0f));
             C2D_SceneBegin(top);
-            auto DrawText = [&](const std::string& str, float x, float y, float scaleX, float scaleY, u32 color) {
+            auto DrawText = [&](const std::string& str, float x, float y, float scaleX, float scaleY) {
                 C2D_Text text;
                 C2D_TextParse(&text, text_buf, str.c_str());
                 C2D_TextOptimize(&text);
