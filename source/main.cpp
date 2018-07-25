@@ -9,7 +9,7 @@ ctr::fs::File file;
 
 void FixChecksum() {
     file.SetOffset(0);
-    u8* bytes = se.ReadBytes(FILESIZE_PROGRESS);
+    u8* bytes = file.ReadBytes(FILESIZE_PROGRESS);
     u32* checksum = (u32*)bytes;
     *checksum = addcrc((u16*)(bytes + 0x18), FILESIZE_PROGRESS - 0x18, ADDIFF_PROGRESS);
     file.SetOffset(0);
@@ -31,13 +31,13 @@ void AllMedals() {
 }
 
 void BackupMedals() {
-    ctr::fs::File medals("/medals.bin", Endian::Little);
+    ctr::fs::File medals("/medals.bin", ctr::fs::Endian::Little);
     if (!medals.IsOpen()) {
         FS_Archive arch;
         FSUSER_OpenArchive(&arch, ARCHIVE_SDMC, fsMakePath(PATH_EMPTY, ""));
         FSUSER_CreateFile(arch, fsMakePath(PATH_ASCII, std::string("/medals.bin").data()), 0, 99);
         FSUSER_CloseArchive(arch);
-        medals = ctr::fs::File("/medals.bin", Endian::Little);
+        medals = ctr::fs::File("/medals.bin", ctr::fs::Endian::Little);
     }
     file.SetOffset(0x4700);
     medals.SetOffset(0);
@@ -46,7 +46,7 @@ void BackupMedals() {
 }
 
 void RestoreMedals() {
-    ctr::fs::File medals("/medals.bin", Endian::Little);
+    ctr::fs::File medals("/medals.bin", ctr::fs::Endian::Little);
     if (!medals.IsOpen()) {
         printf("medals.bin not found!");
         while (aptMainLoop()) {
@@ -101,7 +101,7 @@ int main(int argc, char** argv) {
     size_t region = menu_region.GetOption();
     u64 title_ids[] = {0x00040000001A0500, 0x00040000001A0400, 0x00040000001A0300,
                        0x00040000001BB800};
-    file = ctr::fs::File(title_ids[region], "/Progress", Endian::Little);
+    file = ctr::fs::File(title_ids[region], "/Progress", ctr::fs::Endian::Little);
     if (!file.IsOpen()) {
         printf("Save not found!\n");
         printf("Press START to exit.\n");
@@ -113,7 +113,7 @@ int main(int argc, char** argv) {
         }
         return -1;
     }
-    SFSE::Menu menu("Super Mario Maker for Nintendo 3DS Save Editor\nSelect a option.");
+    ctr::ui::Menu menu("Select a option.");
     menu.AddOption("All medals");
     menu.AddOption("Backup medals");
     menu.AddOption("Restore medals");
