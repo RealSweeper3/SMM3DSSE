@@ -91,8 +91,7 @@ void EditLives() {
 }
 
 int main(int argc, char** argv) {
-    gfxInitDefault();
-    consoleInit(GFX_TOP, NULL);
+    ctr::ui::Init();
     ctr::ui::Menu menu_region("Select a option.");
     menu_region.AddOption("EUR");
     menu_region.AddOption("USA");
@@ -145,6 +144,6 @@ int main(int argc, char** argv) {
         }
     }
     file.Close();
-    gfxExit();
+    ctr::ui::Exit();
     return 0;
 }
