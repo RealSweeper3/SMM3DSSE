@@ -302,6 +302,71 @@ private:
 };
 } // namespace fs
 
+namespace hid {
+
+inline void Poll() {
+    hidScanInput();
+}
+
+inline bool Released(u32 buttons) {
+    return (hidKeysUp() & buttons) != 0;
+}
+
+inline bool Pressed(u32 buttons) {
+    return (hidKeysDown() & buttons) != 0;
+}
+
+inline bool Held(u32 buttons) {
+    return (hidKeysHeld() & buttons) != 0;
+}
+
+inline touchPosition Touch() {
+    touchPosition pos;
+    hidTouchRead(&pos);
+    return pos;
+}
+
+inline circlePosition CirclePad() {
+    circlePosition pos;
+    hidCircleRead(&pos);
+    return pos;
+}
+
+inline circlePosition CStick() {
+    circlePosition pos;
+    irrstCstickRead(&pos);
+    return pos;
+}
+
+Result EnableAccelerometer() {
+    return HIDUSER_EnableAccelerometer();
+}
+
+Result DisableAccelerometer() {
+    return HIDUSER_DisableAccelerometer();
+}
+
+inline accelVector Accelerometer() {
+    accelVector vec;
+    hidAccelRead(&vec);
+    return vec;
+}
+
+Result EnableGyroscope() {
+    return HIDUSER_EnableGyroscope();
+}
+
+Result DisableGyroscope() {
+    return HIDUSER_DisableGyroscope();
+}
+
+inline angularRate Gyroscope() {
+    angularRate rate;
+    hidGyroRead(&rate);
+    return rate;
+}
+} // namespace hid
+
 namespace ui {
 
 static C3D_RenderTarget* top;
@@ -318,15 +383,15 @@ void Init() {
 
 void Exit() {
     C2D_TextBufDelete(text_buf);
-	C2D_Fini();
-	C3D_Fini();
-	gfxExit();
+    C2D_Fini();
+    C3D_Fini();
+    gfxExit();
 }
 
 void Show(const std::string& message, u32 buttons) {
     while (true) {
-        ctr::hid::Poll();
-        if (ctr::hid::Pressed(buttons))
+        hid::Poll();
+        if (hid::Pressed(buttons))
             break;
         C2D_SceneBegin(top);
         C3D_FrameBegin(C3D_FRAME_SYNCDRAW);
@@ -353,17 +418,7 @@ public:
 
     size_t GetOption() {
         size_t selected = 0;
-        //consoleClear();
         auto DrawMenu = [&] {
-            /*consoleClear();
-            if (!message.empty())
-                printf("%s\n", message.c_str());
-            for (size_t i = 0; i < options.size(); ++i) {
-                if (selected == i)
-                    printf("-> %s\n", options[i].c_str());
-                else
-                    printf("   %s\n", options[i].c_str());
-            }*/
             C2D_SceneBegin(top);
             C3D_FrameBegin(C3D_FRAME_SYNCDRAW);
             C2D_TargetClear(top, C2D_Color32(0x68, 0xB0, 0xD8, 0xFF));
@@ -388,14 +443,14 @@ public:
             C3D_FrameEnd(0);
         };
         while (true) {
-            hidScanInput();
-            if (hidKeysDown() & KEY_A)
+            hid::Poll();
+            if (hid::Pressed(KEY_A))
                 break;
-            if (hidKeysDown() & KEY_UP) {
+            if (hid::Pressed(KEY_UP)) {
                 if (selected > 0)
                     --selected;
             }
-            if (hidKeysDown() & KEY_DOWN) {
+            if (hid::Pressed(KEY_DOWN)) {
                 if (selected < (options.size() - 1))
                     ++selected;
             }
@@ -639,7 +694,6 @@ struct Response {
         }
         str += "\r\n";
         str += text;
-        str += "\r\n";
         return str;
     }
 };
@@ -667,8 +721,7 @@ struct Server {
         u32 clientlen;
         char* data = new char[1026];
         while (aptMainLoop()) {
-            gspWaitForVBlank();
-            hidScanInput();
+            hid::Poll();
             csock = accept(sock, (struct sockaddr*)&client, &clientlen);
             if (csock > 0) {
                 fcntl(csock, F_SETFL, fcntl(csock, F_GETFL, 0) & ~O_NONBLOCK);
@@ -694,8 +747,11 @@ struct Server {
                 close(csock);
                 csock = -1;
             }
-            if (hidKeysDown() & KEY_START)
+            if (hid::Pressed(KEY_START))
                 break;
+            gfxFlushBuffers();
+            gfxSwapBuffers();
+            gspWaitForVBlank();
         }
         close(sock);
         socExit();
@@ -834,74 +890,9 @@ Response Head(const std::string& url, bool keep_alive = false, Headers headers =
 } // namespace http
 } // namespace network
 
-namespace hid {
-
-inline void Poll() {
-    hidScanInput();
-}
-
-inline bool Released(u32 buttons) {
-    return (hidKeysUp() & buttons) != 0;
-}
-
-inline bool Pressed(u32 buttons) {
-    return (hidKeysDown() & buttons) != 0;
-}
-
-inline bool Held(u32 buttons) {
-    return (hidKeysHeld() & buttons) != 0;
-}
-
-inline touchPosition Touch() {
-    touchPosition pos;
-    hidTouchRead(&pos);
-    return pos;
-}
-
-inline circlePosition CirclePad() {
-    circlePosition pos;
-    hidCircleRead(&pos);
-    return pos;
-}
-
-inline circlePosition CStick() {
-    circlePosition pos;
-    irrstCstickRead(&pos);
-    return pos;
-}
-
-Result EnableAccelerometer() {
-    return HIDUSER_EnableAccelerometer();
-}
-
-Result DisableAccelerometer() {
-    return HIDUSER_DisableAccelerometer();
-}
-
-inline accelVector Accelerometer() {
-    accelVector vec;
-    hidAccelRead(&vec);
-    return vec;
-}
-
-Result EnableGyroscope() {
-    return HIDUSER_EnableGyroscope();
-}
-
-Result DisableGyroscope() {
-    return HIDUSER_DisableGyroscope();
-}
-
-inline angularRate Gyroscope() {
-    angularRate rate;
-    hidGyroRead(&rate);
-    return rate;
-}
-} // namespace hid
-
 namespace news {
 
-Result Enit() {
+Result Init() {
     return newsInit();
 }
 
@@ -916,22 +907,22 @@ Result AddNotification(std::u16string title, std::u16string message, void* image
 
 namespace battery {
 
-Result init() {
+Result Init() {
     return ptmuInit() & mcuHwcInit();
 }
 
-void exit() {
+void Exit() {
     ptmuExit();
     mcuHwcExit();
 }
 
-bool charging() {
+bool Charging() {
     u8 charging;
     PTMU_GetBatteryChargeState(&charging);
     return charging != 0;
 }
 
-inline u8 level(bool mcu) {
+inline u8 Level(bool mcu) {
     u8 level;
     if (mcu)
         MCUHWC_GetBatteryLevel(&level);
