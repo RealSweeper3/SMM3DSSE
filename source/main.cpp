@@ -33,7 +33,7 @@ void AllMedals() {
 void BackupMedals() {
     ctr::fs::File medals("/medals.bin", ctr::fs::Endian::Little);
     if (!medals.IsOpen())
-        medals.Create();
+        medals.Create(99);
     file.SetOffset(0x4700);
     medals.SetOffset(0);
     medals.WriteBytes(file.ReadBytes(99), 99);
@@ -43,7 +43,7 @@ void BackupMedals() {
 void RestoreMedals() {
     ctr::fs::File medals("/medals.bin", ctr::fs::Endian::Little);
     if (!medals.IsOpen()) {
-        ctr::ui::ShowWait("medals.bin not found!", KEY_A);
+        ctr::ui::Show("medals.bin not found!", KEY_A);
         return;
     }
     file.SetOffset(0x4700);
@@ -61,7 +61,7 @@ void EditLives() {
     int i = std::atoi(lives);
     s8 converted = static_cast<s8>((i > 127) ? 0 : i);
     if ((converted == 0) || (converted > 100)) {
-        ctr::ui::ShowWait("Invalid lives value!", KEY_A);
+        ctr::ui::Show("Invalid lives value!", KEY_A);
         return;
     }
     file.SetOffset(0x4250);
