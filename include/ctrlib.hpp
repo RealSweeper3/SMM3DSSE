@@ -437,7 +437,7 @@ public:
             C3D_FrameBegin(C3D_FRAME_SYNCDRAW);
             C2D_TargetClear(top, C2D_Color32(0x68, 0xB0, 0xD8, 0xFF));
             C2D_SceneBegin(top);
-            if (!message.empty()) {
+            if (!message.empty())
                 DrawText(message, 8.0f, 8.0f);
             for (size_t i = 0; i < options.size(); ++i) {
                 if (selected == i)
