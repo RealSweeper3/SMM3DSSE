@@ -323,10 +323,10 @@ void Exit() {
 	gfxExit();
 }
 
-void ShowWait(const std::string& message, u32 keys) {
+void Show(const std::string& message, u32 buttons) {
     while (true) {
-        hid::Poll();
-        if (hid::Pressed(keys))
+        ctr::hid::Poll();
+        if (ctr::hid::Pressed(buttons))
             break;
         C2D_SceneBegin(top);
         C3D_FrameBegin(C3D_FRAME_SYNCDRAW);
