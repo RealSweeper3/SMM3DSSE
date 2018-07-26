@@ -388,18 +388,22 @@ void Exit() {
     gfxExit();
 }
 
+inline void DrawText(const std::string& str, float x, float y, float scaleX, float scaleY) {
+    C2D_Text text;
+    C2D_TextParse(&text, text_buf, str.c_str());
+    C2D_TextOptimize(&text);
+    C2D_DrawText(&text, C2D_WithColor, x, y, 0.5f, scaleX, scaleY);
+}
+
 void Show(const std::string& message, u32 buttons) {
     while (true) {
         hid::Poll();
         if (hid::Pressed(buttons))
             break;
-        C2D_SceneBegin(top);
         C3D_FrameBegin(C3D_FRAME_SYNCDRAW);
         C2D_TargetClear(top, C2D_Color32(0x68, 0xB0, 0xD8, 0xFF));
-        C2D_Text text;
-        C2D_TextParse(&text, text_buf, message.c_str());
-        C2D_TextOptimize(&text);
-        C2D_DrawText(&text, C2D_WithColor, 0, 0, 0.5f, 1, 1);
+        C2D_SceneBegin(top);
+        DrawText(message, 0, 0, 1, 1);
         C3D_FrameEnd(0);
     }
 }
@@ -418,16 +422,21 @@ public:
 
     size_t GetOption() {
         size_t selected = 0;
-        auto DrawMenu = [&] {
-            C2D_SceneBegin(top);
+        while (true) {
+            hid::Poll();
+            if (hid::Pressed(KEY_A))
+                break;
+            if (hid::Pressed(KEY_UP)) {
+                if (selected > 0)
+                    --selected;
+            }
+            if (hid::Pressed(KEY_DOWN)) {
+                if (selected < (options.size() - 1))
+                    ++selected;
+            }
             C3D_FrameBegin(C3D_FRAME_SYNCDRAW);
             C2D_TargetClear(top, C2D_Color32(0x68, 0xB0, 0xD8, 0xFF));
-            auto DrawText = [&](const std::string& str, float x, float y, float scaleX, float scaleY) {
-                C2D_Text text;
-                C2D_TextParse(&text, text_buf, str.c_str());
-                C2D_TextOptimize(&text);
-                C2D_DrawText(&text, C2D_WithColor, x, y, 0.5f, scaleX, scaleY);
-            };
+            C2D_SceneBegin(top);
             float y = 0;
             if (!message.empty()) {
                 DrawText(message, 0, 0, 1, 1);
@@ -441,20 +450,6 @@ public:
                 y += 25;
             }
             C3D_FrameEnd(0);
-        };
-        while (true) {
-            hid::Poll();
-            if (hid::Pressed(KEY_A))
-                break;
-            if (hid::Pressed(KEY_UP)) {
-                if (selected > 0)
-                    --selected;
-            }
-            if (hid::Pressed(KEY_DOWN)) {
-                if (selected < (options.size() - 1))
-                    ++selected;
-            }
-            DrawMenu();
         }
         return selected;
     }
