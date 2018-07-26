@@ -388,11 +388,11 @@ void Exit() {
     gfxExit();
 }
 
-inline void DrawText(const std::string& str, float x, float y, float scaleX, float scaleY) {
+inline void DrawText(const std::string& str, float x, float y) {
     C2D_Text text;
     C2D_TextParse(&text, text_buf, str.c_str());
     C2D_TextOptimize(&text);
-    C2D_DrawText(&text, C2D_WithColor, x, y, 0.5f, scaleX, scaleY);
+    C2D_DrawText(&text, 0, x, y, 0.5f, 0.5f, 0.5f);
 }
 
 void Show(const std::string& message, u32 buttons) {
@@ -403,7 +403,7 @@ void Show(const std::string& message, u32 buttons) {
         C3D_FrameBegin(C3D_FRAME_SYNCDRAW);
         C2D_TargetClear(top, C2D_Color32(0x68, 0xB0, 0xD8, 0xFF));
         C2D_SceneBegin(top);
-        DrawText(message, 0, 0, 1, 1);
+        DrawText(message, 8.0f, 8.0f);
         C3D_FrameEnd(0);
     }
 }
@@ -437,17 +437,13 @@ public:
             C3D_FrameBegin(C3D_FRAME_SYNCDRAW);
             C2D_TargetClear(top, C2D_Color32(0x68, 0xB0, 0xD8, 0xFF));
             C2D_SceneBegin(top);
-            float y = 0;
             if (!message.empty()) {
-                DrawText(message, 0, 0, 1, 1);
-                y = 25;
-            }
+                DrawText(message, 8.0f, 8.0f);
             for (size_t i = 0; i < options.size(); ++i) {
                 if (selected == i)
-                    DrawText(std::string("-> " + options[i]), 0, y, 0.7, 0.7);
+                    DrawText(std::string("-> " + options[i]), 8.0f, message.empty() ? (8.0f / (i + 1)) : (8.0f / (i + 2)));
                 else
-                    DrawText(std::string("   " + options[i]), 0, y, 0.7, 0.7);
-                y += 25;
+                    DrawText(std::string("   " + options[i]), 8.0f, message.empty() ? (8.0f / (i + 1)) : (8.0f / (i + 2)));
             }
             C3D_FrameEnd(0);
         }
