@@ -33,19 +33,19 @@ struct Impl {
             size_t option = menu.GetOption();
             switch (option) {
             case 0:
-                AllMedals();
+                AllMedals(file);
                 break;
             case 1:
-                BackupMedals();
+                BackupMedals(file);
                 break;
             case 2:
-                RestoreMedals();
+                RestoreMedals(file);
                 break;
             case 3:
-                EditLives();
+                EditLives(file);
                 break;
             case 4:
-                AllItems();
+                AllItems(file);
                 break;
             case 5:
                 exit_ = true;
@@ -68,7 +68,7 @@ struct Impl {
     void AllItems(ctr::fs::File& file) {
         file.SetOffset(0x4252);
         file.Write<s8>(19);
-        FixChecksum();
+        FixChecksum(file);
     }
 
     void AllMedals(ctr::fs::File& file) {
@@ -76,7 +76,7 @@ struct Impl {
             file.SetOffset(0x4700 + i);
             file.Write<s8>(7);
         }
-        FixChecksum();
+        FixChecksum(file);
     }
 
     void BackupMedals(ctr::fs::File& file) {
@@ -99,7 +99,7 @@ struct Impl {
         medals.SetOffset(0);
         file.WriteBytes(medals.ReadBytes(99), 99);
         medals.Close();
-        FixChecksum();
+        FixChecksum(file);
     }
 
     void EditLives(ctr::fs::File& file) {
