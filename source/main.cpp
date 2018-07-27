@@ -7,7 +7,6 @@ extern "C" {
 
 struct Impl {
     int Start() {
-        ctr::ui::Init();
         ctr::ui::Menu menu_region("Select a option.");
         menu_region.AddOption("EUR");
         menu_region.AddOption("USA");
@@ -122,5 +121,8 @@ struct Impl {
 
 int main(int argc, char** argv) {
     Impl impl;
-    return impl.Start();
+    ctr::ui::Init();
+    int result = impl.Start();
+    ctr::ui::Exit();
+    return result;
 }
