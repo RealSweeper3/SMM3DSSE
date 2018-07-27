@@ -6,7 +6,7 @@ extern "C" {
 }
 
 struct Impl {
-    Impl() {
+    int Start() {
         ctr::ui::Init();
         ctr::ui::Menu menu_region("Select a option.");
         menu_region.AddOption("EUR");
@@ -16,7 +16,7 @@ struct Impl {
         size_t region = menu_region.GetOption();
         u64 title_ids[] = {0x00040000001A0500, 0x00040000001A0400, 0x00040000001A0300,
                            0x00040000001BB800};
-        file = ctr::fs::File(title_ids[region], "/Progress");
+        ctr::fs::File file(title_ids[region], "/Progress");
         if (!file.IsOpen()) {
             ctr::ui::Show("Save not found!\nPress START to exit.", KEY_START);
             return -1;
@@ -121,5 +121,5 @@ struct Impl {
 
 int main(int argc, char** argv) {
     Impl impl;
-    return 0;
+    return impl.Start();
 }
