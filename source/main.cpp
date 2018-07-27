@@ -54,6 +54,7 @@ struct Impl {
         }
         file.Close();
         ctr::ui::Exit();
+        return 0;
     }
 
     void FixChecksum(ctr::fs::File& file) {
