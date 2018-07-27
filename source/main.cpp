@@ -115,7 +115,7 @@ struct Impl {
         }
         file.SetOffset(0x4250);
         file.Write<s8>(converted);
-        FixChecksum();
+        FixChecksum(file);
     }
 };
 
