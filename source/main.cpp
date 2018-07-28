@@ -93,6 +93,11 @@ struct Impl {
         ctr::ui::Button* button6 = new ctr::ui::Button(&app, "button6", 103, 34, "Unlock all items", [&] {
             AllItems();
         }, 100, 30, COLOR_WHITE);
+        button2->Hide();
+        button3->Hide();
+        button4->Hide();
+        button5->Hide();
+        button6->Hide();
         ctr::ui::Button* button1 = new ctr::ui::Button(&app, "button1", 125.260009765625, 50.5, "OK", [&] {
             u64 title_ids[] = {0x00040000001A0500, 0x00040000001A0400, 0x00040000001A0300,
                                0x00040000001BB800};
