@@ -52,7 +52,8 @@ struct Impl {
         auto RestoreMedals = [&] {
             ctr::fs::File medals("/medals.bin");
             if (!medals.IsOpen()) {
-                ctr::ui::Show("medals.bin not found!", KEY_A);
+                text5->Hide();
+                text6->Show();
                 return;
             }
             file->SetOffset(0x4700);
@@ -69,7 +70,8 @@ struct Impl {
             int i = std::atoi(lives);
             s8 converted = static_cast<s8>((i > 127) ? 0 : i);
             if ((converted == 0) || (converted > 100)) {
-                invalid->SetText("Invalid lives value!");
+                text6->Hide();
+                text5->Show();
                 return;
             }
             file->SetOffset(0x4250);
@@ -103,9 +105,13 @@ struct Impl {
                 text2->Hide();
                 comboBox1->Hide();
                 button2->Show();
+                button3->Show();
+                button4->Show();
+                button5->Show();
+                button6->Show();
             }
         }, 60, 31, COLOR_WHITE);
-        app.AddControls({text1, text2, text3, text4, comboBox1, button1});
+        app.AddControls({text1, text2, text3, text4, text5, text6, comboBox1, button1, button2, button3, button4, button5, button6});
         app.Start([&] (u32 buttons) -> bool {
             if (buttons & KEY_START) {
                 file->Close();
