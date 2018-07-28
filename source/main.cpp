@@ -27,7 +27,7 @@ struct Impl {
             *checksum = addcrc((u16*)(bytes + 0x18), FILESIZE_PROGRESS - 0x18, ADDIFF_PROGRESS);
             file->SetOffset(0);
             file->WriteBytes(bytes, FILESIZE_PROGRESS);
-        }
+        };
         auto AllItems = [&] {
             file->SetOffset(0x4252);
             file->Write<s8>(19);
@@ -80,23 +80,23 @@ struct Impl {
         };
         ctr::ui::Button* button2 = new ctr::ui::Button(&app, "button2", 1, 1, "All medals", [&] {
             AllMedals();
-        }, 100, 30);
+        }, 100, 30, COLOR_WHITE);
         ctr::ui::Button* button3 = new ctr::ui::Button(&app, "button3", 103, 1, "Backup medals", [&] {
             BackupMedals();
-        }, 100, 30);
+        }, 100, 30, COLOR_WHITE);
         ctr::ui::Button* button4 = new ctr::ui::Button(&app, "button4", 205, 1, "Restore medals", [&] {
             RestoreMedals();
-        }, 100, 30);
+        }, 100, 30, COLOR_WHITE);
         ctr::ui::Button* button5 = new ctr::ui::Button(&app, "button5", 1, 34, "Edit lives", [&] {
             EditLives();
-        }, 100, 30);
+        }, 100, 30, COLOR_WHITE);
         ctr::ui::Button* button6 = new ctr::ui::Button(&app, "button6", 103, 34, "Unlock all items", [&] {
             AllItems();
-        }, 100, 30);
+        }, 100, 30, COLOR_WHITE);
         ctr::ui::Button* button1 = new ctr::ui::Button(&app, "button1", 125.260009765625, 50.5, "OK", [&] {
             u64 title_ids[] = {0x00040000001A0500, 0x00040000001A0400, 0x00040000001A0300,
                                0x00040000001BB800};
-            file = new ctr::fs::File(title_ids[region], "/Progress");
+            file = new ctr::fs::File(title_ids[comboBox1->GetIndex()], "/Progress");
             button1->Hide();
             if (!file->IsOpen()) {
                 text3->Show();
