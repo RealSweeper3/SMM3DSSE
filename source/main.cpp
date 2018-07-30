@@ -105,8 +105,8 @@ struct Impl {
             comboBox1->Hide();
             button1->Hide();
             if (!file->IsOpen()) {
+                text2->Show();
                 text3->Show();
-                text4->Show();
             } else {
                 button2->Show();
                 button3->Show();
