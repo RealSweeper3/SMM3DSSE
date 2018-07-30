@@ -101,7 +101,7 @@ struct Impl {
             u64 title_ids[] = {0x00040000001A0500, 0x00040000001A0400, 0x00040000001A0300,
                                0x00040000001BB800};
             file = new ctr::fs::File(title_ids[comboBox1->GetIndex()], "/Progress");
-            text2->Hide();
+            text1->Hide();
             comboBox1->Hide();
             button1->Hide();
             if (!file->IsOpen()) {
