@@ -8,16 +8,15 @@ extern "C" {
 struct Impl {
     void Start() {
         ctr::ui::Application app(COLOR_DEFAULT, COLOR_DEFAULT);
-        ctr::ui::Text* text1 = new ctr::ui::Text(&app, "text1", GFX_TOP, 0, 0, "SMM3DSSE");
-        ctr::ui::Text* text2 = new ctr::ui::Text(&app, "text2", GFX_BOTTOM, 71, 5, "Select the region of the game.");
-        ctr::ui::Text* text3 = new ctr::ui::Text(&app, "text3", GFX_BOTTOM, 107.260009765625, 89.5, "Save not found!");
-        ctr::ui::Text* text4 = new ctr::ui::Text(&app, "text4", GFX_BOTTOM, 93.260009765625, 110.5, "Press START to exit.");
-        ctr::ui::Text* text5 = new ctr::ui::Text(&app, "text5", GFX_BOTTOM, 105, 199, "Invalid lives value!");
-        ctr::ui::Text* text6 = new ctr::ui::Text(&app, "text6", GFX_BOTTOM, 95, 199, "medals.bin not found!");
+        ctr::ui::Text* text1 = new ctr::ui::Text(&app, "text1", GFX_BOTTOM, 71, 5, "Select the region of the game.");
+        ctr::ui::Text* text2 = new ctr::ui::Text(&app, "text2", GFX_BOTTOM, 107.260009765625, 89.5, "Save not found!");
+        ctr::ui::Text* text3 = new ctr::ui::Text(&app, "text3", GFX_BOTTOM, 93.260009765625, 110.5, "Press START to exit.");
+        ctr::ui::Text* text4 = new ctr::ui::Text(&app, "text4", GFX_BOTTOM, 105, 199, "Invalid lives value!");
+        ctr::ui::Text* text5 = new ctr::ui::Text(&app, "text5", GFX_BOTTOM, 95, 199, "medals.bin not found!");
+        text2->Hide();
         text3->Hide();
         text4->Hide();
         text5->Hide();
-        text6->Hide();
         ctr::ui::ComboBox* comboBox1 = new ctr::ui::ComboBox(&app, "comboBox1", 125.260009765625, 21.5, 60, 25, {"EUR", "USA", "JPN", "KOR"});
         ctr::fs::File* file = nullptr;
         auto FixChecksum = [&] {
@@ -52,8 +51,8 @@ struct Impl {
         auto RestoreMedals = [&] {
             ctr::fs::File medals("/medals.bin");
             if (!medals.IsOpen()) {
-                text5->Hide();
-                text6->Show();
+                text4->Hide();
+                text5->Show();
                 return;
             }
             file->SetOffset(0x4700);
@@ -70,8 +69,8 @@ struct Impl {
             int i = std::atoi(lives);
             s8 converted = static_cast<s8>((i > 127) ? 0 : i);
             if ((converted == 0) || (converted > 100)) {
-                text6->Hide();
-                text5->Show();
+                text5->Hide();
+                text4->Show();
                 return;
             }
             file->SetOffset(0x4250);
@@ -116,7 +115,7 @@ struct Impl {
                 button6->Show();
             }
         }, 60, 31, COLOR_WHITE);
-        app.AddControls({text1, text2, text3, text4, text5, text6, comboBox1, button1, button2, button3, button4, button5, button6});
+        app.AddControls({text1, text2, text3, text4, text5, comboBox1, button1, button2, button3, button4, button5, button6});
         app.Start([&] (u32 buttons) -> bool {
             if (buttons & KEY_START) {
                 file->Close();
