@@ -117,6 +117,10 @@ struct Impl {
         }, 60, 31, COLOR_WHITE);
         app.AddControls({text1, text2, text3, text4, text5, comboBox1, button1, button2, button3, button4, button5, button6});
         app.Start([&] (u32 buttons) -> bool {
+            if (buttons & KEY_A) {
+                text4->Hide();
+                text5->Hide();
+            }
             if (buttons & KEY_START) {
                 file->Close();
                 return true;
