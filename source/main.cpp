@@ -9,14 +9,6 @@ struct Impl {
     void Start() {
         ctr::ui::Application app(COLOR_DEFAULT, COLOR_DEFAULT);
         ctr::ui::Text* text1 = new ctr::ui::Text(&app, "text1", GFX_BOTTOM, 71, 5, "Select the region of the game.");
-        ctr::ui::Text* text2 = new ctr::ui::Text(&app, "text2", GFX_BOTTOM, 107.260009765625, 89.5, "Save not found!");
-        ctr::ui::Text* text3 = new ctr::ui::Text(&app, "text3", GFX_BOTTOM, 93.260009765625, 110.5, "Press START to exit.");
-        ctr::ui::Text* text4 = new ctr::ui::Text(&app, "text4", GFX_BOTTOM, 105, 199, "Invalid lives value!");
-        ctr::ui::Text* text5 = new ctr::ui::Text(&app, "text5", GFX_BOTTOM, 95, 199, "medals.bin not found!");
-        text2->Hide();
-        text3->Hide();
-        text4->Hide();
-        text5->Hide();
         ctr::ui::ComboBox* comboBox1 = new ctr::ui::ComboBox(&app, "comboBox1", 125.260009765625, 21.5, 60, 25, {"EUR", "USA", "JPN", "KOR"});
         ctr::fs::File* file = nullptr;
         auto FixChecksum = [&] {
@@ -30,14 +22,12 @@ struct Impl {
         auto AllItems = [&] {
             file->SetOffset(0x4252);
             file->Write<s8>(19);
-            FixChecksum();
         };
         auto AllMedals = [&] {
             for (int i = 0; i <= 99; ++i) {
                 file->SetOffset(0x4700 + i);
                 file->Write<s8>(7);
             }
-            FixChecksum();
         };
         auto BackupMedals = [&] {
             ctr::fs::File medals("/medals.bin");
@@ -51,31 +41,22 @@ struct Impl {
         auto RestoreMedals = [&] {
             ctr::fs::File medals("/medals.bin");
             if (!medals.IsOpen()) {
-                text4->Hide();
-                text5->Show();
+                ctr::util::ShowError("medals.bin not found");
                 return;
             }
             file->SetOffset(0x4700);
             medals.SetOffset(0);
             file->WriteBytes(medals.ReadBytes(99), 99);
             medals.Close();
-            FixChecksum();
         };
         auto EditLives = [&] {
-            SwkbdState swkbd;
-            char lives[4];
-            swkbdInit(&swkbd, SWKBD_TYPE_NUMPAD, 1, 3);
-            swkbdInputText(&swkbd, lives, sizeof(lives));
-            int i = std::atoi(lives);
-            s8 converted = static_cast<s8>((i > 127) ? 0 : i);
-            if ((converted == 0) || (converted > 100)) {
-                text5->Hide();
-                text4->Show();
+            unsigned long lives = ctr::ui::GetNumber("Lives", 3, false);
+            if ((lives == 0) || (lives > 100)) {
+                ctr::util::ShowError("Invalid lives value");
                 return;
             }
             file->SetOffset(0x4250);
-            file->Write<s8>(converted);
-            FixChecksum();
+            file->Write<s8>(static_cast<s8>(converted));
         };
         ctr::ui::Button* button2 = new ctr::ui::Button(&app, "button2", 1, 1, "All medals", [&] {
             AllMedals();
@@ -105,8 +86,8 @@ struct Impl {
             comboBox1->Hide();
             button1->Hide();
             if (!file->IsOpen()) {
-                text2->Show();
-                text3->Show();
+                ctr::util::ShowError("Save not found");
+                app.Exit();
             } else {
                 button2->Show();
                 button3->Show();
@@ -115,13 +96,10 @@ struct Impl {
                 button6->Show();
             }
         }, 60, 31, COLOR_WHITE);
-        app.AddControls({text1, text2, text3, text4, text5, comboBox1, button1, button2, button3, button4, button5, button6});
+        app.AddControls({text1, comboBox1, button1, button2, button3, button4, button5, button6});
         app.Start([&] (u32 buttons) -> bool {
-            if (buttons & KEY_A) {
-                text4->Hide();
-                text5->Hide();
-            }
             if (buttons & KEY_START) {
+                FixChecksum();
                 file->Close();
                 return true;
             }
