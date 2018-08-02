@@ -50,13 +50,13 @@ struct Impl {
             medals.Close();
         };
         auto EditLives = [&] {
-            unsigned long lives = ctr::ui::GetNumber("Lives", 3, false);
+            unsigned long lives = ctr::util::GetNumber("Lives", 3, false);
             if ((lives == 0) || (lives > 100)) {
                 ctr::util::ShowError("Invalid lives value");
                 return;
             }
             file->SetOffset(0x4250);
-            file->Write<s8>(static_cast<s8>(converted));
+            file->Write<s8>(static_cast<s8>(lives));
         };
         ctr::ui::Button* button2 = new ctr::ui::Button(&app, "button2", 1, 1, "All medals", [&] {
             AllMedals();
