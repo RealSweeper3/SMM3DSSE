@@ -24,9 +24,3 @@ build_script:
 artifacts:
   - path: "SMM3DSSE.3dsx"
     name: build
-
-deploy:
- - provider: Environment
-   name: ghreleasesnd
-   on:
-     branch: master
